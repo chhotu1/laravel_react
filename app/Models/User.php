@@ -26,8 +26,8 @@ class User extends Authenticatable implements JWTSubject
 
     use SoftDeletes;
     
-    const ADMIN = 2;
-    const USER = 1;
+    const ADMIN = 1;
+    const USER = 2;
     const TEACHER = 3;
     const ADMIN_ROUTE = '/admin-dashboard';
     
@@ -90,9 +90,9 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     protected $attributes = [
-        'status' => 1,
+        'status' => 'Active',
         'type' =>1,
-        'role'=>2,
+        'role'=>'User',
     ];
 
     /**

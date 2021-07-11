@@ -44,7 +44,7 @@ class AuthController extends ResponseController
                 $path = public_path() . '/uploads/profile';
                 $file->move($path, $file->getClientOriginalName());
             }
-            $request->password = Hash::make($request->password);
+            $request['password'] = Hash::make($request->password);
             $user = User::create($request->all());
             $this->status = true;
             $this->errors = [];
@@ -65,15 +65,26 @@ class AuthController extends ResponseController
  
      public function userLogin(Request $request)
      {
+        $rules = array(
+            'email' => 'required|email',
+            'password' => 'required',
+        );
+        $validation = Validator::make($request->all(),$rules);
+        if ($validation->fails())  {
+            $this->status = false;
+            $this->errors = [];
+            $this->message = $validation->errors()->toArray();
+            $this->data = null;
+            return $this->sendResult();
+        }
         $credentials = request(['email', 'password']);
-    
         if ($request->email && $request->password) {
             $credentials = $request->only('email', 'password');
-            $user = User::where('email',$request->email)->get();
- 
+            $user = User::where('email',$request->email)->first();
+
              if($user)
              {
-                 if(Hash::check($request->password, $user[0]->password))
+                 if(Hash::check($request->password, $user->password))
                  {
                      try {
                          if (! $token = JWTAuth::attempt($credentials, ['exp' => Carbon\Carbon::now()->addMonths(12)->timestamp]) )
@@ -84,21 +95,22 @@ class AuthController extends ResponseController
                          return response()->json(['message' => '', 'status' => false , 'data' => json_decode('{}'),'errors' => 'could_not_create_token'], 500);
                      }
  
-                     $user[0]->api_token = $token;
+                     $user->api_token = $token;
  
                      $this->status = true;
-                     $this->errors = [];
-                     $this->message = "Login SuccesFully";
+                     $this->errors = "User Login Successfully";
+                     $this->message = [];
                      $this->data = $user;
-                 } else {
+                     
+                 }else {
                      $this->status = false;
                      $this->errors = [];
-                     $this->message = "Inccorect Password";
+                     $this->message = ['password'=>['Inccorect Password']];
                  }
              }else {
                  $this->status = false;
-                 $this->errors = "Email Not Found";
-                 $this->message =[];
+                 $this->errors =[];
+                 $this->message =['email'=>['Email Not Found']];
              }
          }
          else

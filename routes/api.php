@@ -20,3 +20,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'userLogin']);
 Route::post('/register', [AuthController::class, 'userRegitration']);
+
+Route::group(['middleware'=>['user']], function () {
+
+});
+
+Route::group(['middleware'=>['admin']], function () {
+    // Route::namespace('admin')->prefix('admin')->group(function() {
+    //Route::get(User::ADMIN_ROUTE, [AdminController::class, 'index'])->name('admin');
+});
+
+Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function() {
+    Route::group(['middleware'=>['admin']], function () {
+        
+    });
+});
